@@ -1,0 +1,49 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 8cc4db09b2fd89bb75338d6e6a4f2062a5d57ad3925b3632f27d52a5fc4c91d4
+
+name:           monoids-in-the-categoy-of-endofunctors
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/jamestmartin/monoids-in-the-categoy-of-endofunctors#readme>
+homepage:       https://github.com/jamestmartin/monoids-in-the-categoy-of-endofunctors#readme
+bug-reports:    https://github.com/jamestmartin/monoids-in-the-categoy-of-endofunctors/issues
+author:         James Martin
+maintainer:     james@jtmar.me
+copyright:      Copyright: (C) 2020 James Martin
+license:        GPL-3.0-or-later
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/jamestmartin/monoids-in-the-categoy-of-endofunctors
+
+library
+  exposed-modules:
+      Category
+      Category.Applicative
+      Category.Constraint
+      Category.Functor
+      Category.Functor.Const
+      Category.Functor.Identity
+      Category.Internal.Ambiguous
+      Category.Internal.Hom
+      Category.Monad
+      Category.Monoid
+      Category.Monoidal
+      Category.Nat
+      Category.Semigroup
+  other-modules:
+      Paths_monoids_in_the_categoy_of_endofunctors
+  hs-source-dirs:
+      src
+  default-extensions: BlockArguments ConstraintKinds DataKinds FlexibleContexts FlexibleInstances TypeFamilies GADTs KindSignatures MultiParamTypeClasses NoImplicitPrelude PolyKinds QuantifiedConstraints RankNTypes ScopedTypeVariables TypeApplications TypeOperators UndecidableInstances UndecidableSuperClasses
+  build-depends:
+      base >=4.13 && <5
+  default-language: Haskell2010

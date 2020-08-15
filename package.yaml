@@ -1,0 +1,38 @@
+name:                monoids-in-the-categoy-of-endofunctors
+version:             0.1.0.0
+github:              "jamestmartin/monoids-in-the-categoy-of-endofunctors"
+license:             GPL-3.0-or-later
+author:              "James Martin"
+maintainer:          "james@jtmar.me"
+copyright:           "Copyright: (C) 2020 James Martin"
+
+extra-source-files:
+- README.md
+
+description:         Please see the README on GitHub at <https://github.com/jamestmartin/monoids-in-the-categoy-of-endofunctors#readme>
+
+default-extensions:
+- BlockArguments
+- ConstraintKinds
+- DataKinds
+- FlexibleContexts
+- FlexibleInstances
+- TypeFamilies
+- GADTs
+- KindSignatures
+- MultiParamTypeClasses
+- NoImplicitPrelude
+- PolyKinds
+- QuantifiedConstraints
+- RankNTypes
+- ScopedTypeVariables
+- TypeApplications
+- TypeOperators
+- UndecidableInstances
+- UndecidableSuperClasses
+
+dependencies:
+- base >= 4.13 && < 5
+
+library:
+  source-dirs: src
