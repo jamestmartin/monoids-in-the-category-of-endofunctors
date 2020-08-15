@@ -1,4 +1,3 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 module Category.Applicative where
 
 import Category
@@ -7,13 +6,13 @@ import Category.Functor.Identity
 import qualified Prelude
 
 class Functor r s f => Applicative r s f where
-    pure :: (r a, s (f a)) => a ~> f a
-    ap :: (r a, r b, r (a ~> b), s (f (a ~> b)), s (f a), s (f b)) => f (a ~> b) -> f a ~> f b
+    pure :: (r a, s (f a)) => proxy r s -> a ~> f a
+    ap :: (r a, r b, r (a ~> b), s (f (a ~> b)), s (f a), s (f b)) => proxy r s -> f (a ~> b) -> f a ~> f b
 
 instance {-# OVERLAPPABLE #-} Prelude.Applicative f => Applicative r s f where
-    pure = Prelude.pure
-    ap = (Prelude.<*>)
+    pure _ = Prelude.pure
+    ap _ = (Prelude.<*>)
 
 instance Applicative r s Identity where
-    pure = Identity
-    ap (Identity f) x = f <$> x
+    pure _ = Identity
+    ap _ (Identity f) x = f <$> x

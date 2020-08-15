@@ -1,4 +1,3 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 module Category.Monad where
 
 import Category
@@ -14,8 +13,11 @@ import Prelude (undefined)
 class (Category (Functor r r), Monoid (Functor r r) m) => Monad r m
 instance (Category (Functor r r), Monoid (Functor r r) m) => Monad r m
 
-return :: forall r m. Monad r m => Dom (Functor r r) Unit m
-return = empty @(Functor r r)
+return :: forall proxy r m. Monad r m => proxy r -> Dom (Functor r r) Unit m
+return _ = empty (Proxy @(Functor r r))
 
-join :: forall r m. Monad r m => Dom (Functor r r) (Product m m) m
-join = append @(Functor r r)
+join :: forall proxy r m. Monad r m => proxy r -> Dom (Functor r r) (Product m m) m
+join _ = append (Proxy @(Functor r r))
+
+class (Category (Endofunctor cat), Comonoid (Endofunctor cat) w) => Comonad cat w
+instance (Category (Endofunctor cat), Comonoid (Endofunctor cat) w) => Comonad cat w

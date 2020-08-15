@@ -1,27 +1,36 @@
-module Category ( module Category
-                , module Category.Internal.Ambiguous
-                , module Category.Internal.Hom
-                ) where
+module Category where
 
-import Category.Internal.Ambiguous
-import Category.Internal.Hom
 import Data.Kind (Constraint)
+
+type family Hom :: i -> i -> k
+type instance Hom = (~>)
+
+type family (~>) :: i -> i -> *
+
+type Dom (a :: i -> j) = (~>) :: i -> i -> *
+
+data Proxy :: k -> * where
+    Proxy :: Proxy k
+
+class Category (r :: k -> Constraint) where
+    identity :: forall proxy a. r a => proxy r -> Dom r a a
+    compose :: forall proxy a b c. (r a, r b, r c) => proxy r -> Dom r b c -> Dom r a b -> Dom r a c
 
 -- | A restricted alias of `identity` which does not cause type ambiguity.
 id :: forall r a. (r ~ AnyC, Category r) => Dom r a a
-id = identity @_ @r
+id = identity (Proxy @r)
 
 -- | A restricted alias of `compose` which does not cause type ambiguity.
 (.) :: forall r a b c. (r ~ AnyC, Category r) => Dom r b c -> Dom r a b -> Dom r a c
-(.) = compose @_ @r
+(.) = compose (Proxy @r)
 
 type instance (~>) = (->)
 
 -- | The category of data types.
 instance Dom r ~ (->) => Category r where
-    identity x = x
-    compose f g x = f (g x)
-  
+    identity _ x = x
+    compose _ f g x = f (g x)
+
 -- Everything below is miscellaneous crap that doesn't have a better home.
 
 class NoC

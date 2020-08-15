@@ -6,4 +6,4 @@ import Category.Functor
 newtype Identity a = Identity { getIdentity :: a }
 
 instance (Category src, Category dest) => Functor src dest Identity where
-    map f (Identity x) = Identity (f x)
+    map _ _ f (Identity x) = Identity (f x)

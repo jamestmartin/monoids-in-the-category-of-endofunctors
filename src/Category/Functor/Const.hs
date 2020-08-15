@@ -11,27 +11,27 @@ reconst :: Const f a -> Const f b
 reconst = Const . getConst
 
 instance (Category src, Category dest) => Functor src dest Const where
-    map f = Nat $ Const . f . getConst
+    map _ _ f = Nat $ Const . f . getConst
 
-instance {-# OVERLAPPABLE #-} (Category src, Category dest) => Functor src dest (Const f) where
-    map _ = Const . getConst
+instance (Category src, Category dest) => Functor src dest (Const f) where
+    map _ _ _ = Const . getConst
 
-instance {-# OVERLAPPABLE #-} (Category src, Category dest) => Contravariant src dest (Const f) where
-    contramap _ = Const . getConst
+instance (Category src, Category dest) => Contravariant src dest (Const f) where
+    contramap _ _ _ = Const . getConst
 
 newtype Const2 f a b = Const2 { getConst2 :: f }
 
 instance (Category src, Category dest) => Functor src dest Const2 where
-    map f = nat2 $ Const2 . f . getConst2
+    map _ _ f = nat2 $ Const2 . f . getConst2
 
-instance {-# OVERLAPPABLE #-} (Category src, Category dest) => Functor src dest (Const2 f) where
-    map f = Nat $ Const2 . getConst2
+instance (Category src, Category dest) => Functor src dest (Const2 f) where
+    map _ _ f = Nat $ Const2 . getConst2
 
-instance {-# OVERLAPPABLE #-} (Category src, Category dest) => Functor src dest (Const2 f a) where
-    map f = Const2 . getConst2
+instance (Category src, Category dest) => Functor src dest (Const2 f a) where
+    map _ _ f = Const2 . getConst2
 
-instance {-# OVERLAPPABLE #-} (Category src, Category dest) => Contravariant src dest (Const2 f) where
-    contramap _ = Nat $ Const2 . getConst2
+instance (Category src, Category dest) => Contravariant src dest (Const2 f) where
+    contramap _ _ _ = Nat $ Const2 . getConst2
 
-instance {-# OVERLAPPABLE #-} (Category src, Category dest) => Contravariant src dest (Const2 f a) where
-    contramap _ = Const2 . getConst2
+instance (Category src, Category dest) => Contravariant src dest (Const2 f a) where
+    contramap _ _ _ = Const2 . getConst2

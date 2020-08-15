@@ -1,9 +1,9 @@
 -- | The category of constraints.
 module Category.Constraint where
-  
+
 import Category
 import Prelude (($))
-  
+
 newtype a :- b = Sub (a => Dict b)
 
 type instance (~>) = (:-)
@@ -15,5 +15,5 @@ data Dict p where
 r \\ Sub Dict = r
 
 instance Dom r ~ (:-) => Category r where
-    identity = Sub Dict
-    compose f g = Sub $ Dict \\ f \\ g
+    identity _ = Sub Dict
+    compose _ f g = Sub $ Dict \\ f \\ g

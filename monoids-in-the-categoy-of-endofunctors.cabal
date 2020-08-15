@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8cc4db09b2fd89bb75338d6e6a4f2062a5d57ad3925b3632f27d52a5fc4c91d4
+-- hash: 73c8dbdf7c11bd3edb3a43f645558791b10821437430c5b2b4ba1c648be52910
 
 name:           monoids-in-the-categoy-of-endofunctors
 version:        0.1.0.0
@@ -32,8 +32,6 @@ library
       Category.Functor
       Category.Functor.Const
       Category.Functor.Identity
-      Category.Internal.Ambiguous
-      Category.Internal.Hom
       Category.Monad
       Category.Monoid
       Category.Monoidal

@@ -1,6 +1,6 @@
 -- | The category of natural transformations.
 module Category.Nat where
-  
+
 import Category
 import Data.Kind (Constraint)
 
@@ -19,5 +19,5 @@ class (forall a. c (nat a)) => NatConstraint (c :: j -> Constraint) (nat :: i ->
 instance (forall a. c (nat a)) => NatConstraint (c :: j -> Constraint) (nat :: i -> j)
 
 instance Category r => Category (NatConstraint r) where
-    identity = Nat (identity @_ @r)
-    compose (Nat f) (Nat g) = Nat (compose @_ @r f g)
+    identity _ = Nat (identity (Proxy @r))
+    compose _ (Nat f) (Nat g) = Nat (compose (Proxy @r) f g)
