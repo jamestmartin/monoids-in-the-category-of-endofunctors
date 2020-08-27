@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 73c8dbdf7c11bd3edb3a43f645558791b10821437430c5b2b4ba1c648be52910
+-- hash: 3a1a51f201a4bf26bb1002122fc79d0d4bb421ec1c4f5f4ba69125a18f1444b4
 
 name:           monoids-in-the-categoy-of-endofunctors
 version:        0.1.0.0
@@ -30,18 +30,14 @@ library
       Category.Applicative
       Category.Constraint
       Category.Functor
-      Category.Functor.Const
-      Category.Functor.Identity
-      Category.Monad
       Category.Monoid
-      Category.Monoidal
-      Category.Nat
+      Category.NaturalTransformation
       Category.Semigroup
   other-modules:
       Paths_monoids_in_the_categoy_of_endofunctors
   hs-source-dirs:
       src
-  default-extensions: BlockArguments ConstraintKinds DataKinds FlexibleContexts FlexibleInstances TypeFamilies GADTs KindSignatures MultiParamTypeClasses NoImplicitPrelude PolyKinds QuantifiedConstraints RankNTypes ScopedTypeVariables TypeApplications TypeOperators UndecidableInstances UndecidableSuperClasses
+  default-extensions: BlockArguments ConstraintKinds FlexibleContexts FlexibleInstances GADTs InstanceSigs MultiParamTypeClasses NoImplicitPrelude PolyKinds QuantifiedConstraints RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
   build-depends:
       base >=4.13 && <5
   default-language: Haskell2010

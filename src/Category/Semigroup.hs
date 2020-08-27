@@ -1,19 +1,22 @@
+{-# LANGUAGE UndecidableSuperClasses #-}
 module Category.Semigroup where
 
 import Category
 import Category.Functor
-import Category.Monoidal
-import Category.Nat
+import Category.NaturalTransformation
 import qualified Control.Monad
-import Data.Kind (Constraint)
-import Prelude (curry, uncurry)
+import Prelude (uncurry)
 import qualified Prelude
 
-class MonoidalCategory r => Semigroup r m where
-    append :: proxy r -> Dom r (Product m m) m
+class (MonoidalCategory hom obj, obj m) => Semigroup hom obj m where
+    append :: proxy obj -> Product obj m m `hom` m
 
-instance {-# OVERLAPPABLE #-} (MonoidalCategory r, Prelude.Semigroup m) => Semigroup r m where
+instance {-# INCOHERENT #-} Prelude.Functor f => Functor (->) EveryC (->) EveryC f where
+    mapObj _ _ _ = Dict
+    map _ _ = Prelude.fmap
+
+instance {-# OVERLAPPABLE #-} (MonoidalCategory (->) obj, obj m, Prelude.Semigroup m) => Semigroup (->) obj m where
     append _ = uncurry (Prelude.<>)
 
-instance {-# OVERLAPPABLE #-} (Category (Functor r r), Prelude.Monad m) => Semigroup (Functor r r) m where
-    append _ = Nat \(Compose x) -> Control.Monad.join x
+instance {-# OVERLAPPABLE #-} (hom ~ Nat (->) EveryC (->) EveryC, MonoidalCategory hom (Endofunctor (->) EveryC), Prelude.Monad m) => Semigroup hom (Endofunctor (->) EveryC) m where
+    append _ = Nat \(ComposeEndofunctor x) -> Control.Monad.join x

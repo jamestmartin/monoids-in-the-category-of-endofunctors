@@ -2,17 +2,13 @@ module Category.Applicative where
 
 import Category
 import Category.Functor
-import Category.Functor.Identity
+import Category.Semigroup ()
 import qualified Prelude
 
-class Functor r s f => Applicative r s f where
-    pure :: (r a, s (f a)) => proxy r s -> a ~> f a
-    ap :: (r a, r b, r (a ~> b), s (f (a ~> b)), s (f a), s (f b)) => proxy r s -> f (a ~> b) -> f a ~> f b
+class (MonoidalCategory domHom domObj, MonoidalCategory codHom codObj, Functor domHom domObj codHom codObj f) => Applicative domHom domObj codHom codObj f where
+    unit :: proxy domHom -> proxy' domObj -> proxy'' codHom -> proxy''' codObj -> f (Unit domObj)
+    zip :: proxy domHom -> proxy' domObj -> proxy'' codObj -> proxy''' codObj -> Product codObj (f a) (f b) `codHom` f (Product domObj a b)
 
-instance {-# OVERLAPPABLE #-} Prelude.Applicative f => Applicative r s f where
-    pure _ = Prelude.pure
-    ap _ = (Prelude.<*>)
-
-instance Applicative r s Identity where
-    pure _ = Identity
-    ap _ (Identity f) x = f <$> x
+instance {-# INCOHERENT #-} Prelude.Applicative f => Applicative (->) EveryC (->) EveryC f where
+    unit _ _ _ _ = Prelude.pure ()
+    zip _ _ _ _ (x, y) = Prelude.fmap (,) x Prelude.<*> y
