@@ -1,4 +1,5 @@
-resolver: lts-16.11
+# Required to use GHC 8.10, which is required for ImportQualifiedPost.
+resolver: nightly-2020-10-20
 
 packages:
 - .
