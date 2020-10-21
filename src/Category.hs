@@ -1,5 +1,7 @@
 {-# LANGUAGE PolyKinds #-}
-module Category.Neutral where
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE UndecidableInstances #-}
+module Category where
 
 import Category.Good qualified as Good
 import Data.Dict (Dict (Dict), (:-) (Sub), (\\))
@@ -17,6 +19,9 @@ class Category cat where
     identity :: cat a a
     compose :: cat b c -> cat a b -> cat a c
 
+(.) :: Category cat => cat b c -> cat a b -> cat a c
+(.) = compose
+
 instance Category (->) where
     identity x = x
     compose f g x = f (g x)
@@ -29,7 +34,7 @@ instance Category (:-) where
 class Category cat => CovariantEndo cat f where
     coendomap :: cat a b -> cat (f a) (f b)
 
-instance Good.Covariant f => CovariantEndo (->) f where
+instance {-# OVERLAPPABLE #-} Good.Covariant f => CovariantEndo (->) f where
     coendomap = Good.comap
 
 -- | A contravariant endofunctor in an unenriched category.
@@ -149,3 +154,19 @@ class Applicative cat m => Monad cat m where
 
 instance Good.Monad m => Monad (->) m where
     join = Good.join
+
+newtype Nat f g = Nat { runNat :: forall a. f a ~> g a }
+
+type instance (~>) = Nat
+
+type D (hom :: (i -> j) -> (i -> j) -> Type) = (~>) :: j -> j -> Type
+
+instance (nat ~ Nat, Category (D nat)) => Category (nat :: (i -> j) -> (i -> j) -> Type) where
+    identity = Nat identity
+    compose (Nat f) (Nat g) = Nat (compose f g)
+
+class AnyC a
+instance AnyC a
+
+class AnyC2 a b
+instance AnyC2 a b
