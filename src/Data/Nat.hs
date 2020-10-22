@@ -2,6 +2,7 @@ module Data.Nat where
 
 import Category
 import Category.Functor.Foldable
+import Category.Functor.Foldable.TH
 import Data.Kind (Type)
 import Data.Maybe (Maybe (Nothing, Just))
 import Quantifier

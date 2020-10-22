@@ -1,16 +1,21 @@
-module Data.Fin where
+{-# LANGUAGE TemplateHaskell #-}
+module Category.Functor.Foldable.THT where
+
+import Category.Functor.Foldable.TH
+import Data.Kind (Type)
 
 import Category
 import Category.Functor.Foldable
-import Data.Kind (Type)
-import Data.Nat
+
+data N = Z | S N
+
+makeBaseFunctor ''N 0
 
 data Fin :: N -> Type where
-    FZ :: Fin ('S n)
-    FS :: Fin n -> Fin ('S n)
-data FinF r :: N -> Type where
-    FZF :: FinF r ('S n)
-    FSF :: r n -> FinF r ('S n)
+    FZ :: forall n. Fin ('S n)
+    FS :: forall n. Fin n -> Fin ('S n)
+
+makeBaseFunctor ''Fin 0
 type instance Base Fin = FinF
 
 instance Functor Fin where
@@ -41,8 +46,8 @@ instance Corecursive Fin where
         FZF -> FZ
         (FSF r) -> FS r
 
-fin2nat :: Nat (:~:) (->) Fin (Const (:~:) N)
-fin2nat = cata (Nat \_ -> alg)
-    where alg :: FinF (Const (:~:) N) n -> Const (:~:) N n
-          alg FZF = Const Z
-          alg (FSF (Const n)) = Const (S n)
+data Vec a :: N -> Type where
+    VZ :: Vec a 'Z
+    VS :: a -> Vec a n -> Vec a ('S n)
+
+makeBaseFunctor ''Vec 0

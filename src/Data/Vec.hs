@@ -7,10 +7,10 @@ import Data.Kind (Type)
 import Data.Nat
 import Quantifier
 
-data Vec a n where
+data Vec a :: N -> Type where
     VZ :: Vec a 'Z
     VS :: a -> Vec a n -> Vec a ('S n)
-data VecF a r n where
+data VecF a r :: N -> Type where
     VZF :: VecF a r 'Z
     VSF :: a -> r n -> VecF a r ('S n)
 type instance Base (Vec a) = (VecF a)
