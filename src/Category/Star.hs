@@ -12,7 +12,6 @@ module Category.Star
     ) where
 
 import Control.Applicative        (Applicative, pure, (<*>))
-import Control.Category           (Category, id, (.))
 import Control.Monad              (Monad, join)
 import Data.Bifunctor             (Bifunctor, bimap)
 import Data.Functor               (Functor, fmap)

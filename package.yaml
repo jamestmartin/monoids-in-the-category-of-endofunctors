@@ -24,17 +24,20 @@ default-extensions:
 - LambdaCase
 - MultiParamTypeClasses
 - NoImplicitPrelude
+- PolyKinds
+- RankNTypes
 - ScopedTypeVariables
 - TypeApplications
 - TypeFamilies
 - TypeOperators
-- Safe
 
 ghc-options:
 - -Weverything
 #- -Werror
 - -Wno-missing-export-lists
 - -Wno-missing-import-lists
+- -Wno-safe
+- -Wno-missing-safe-haskell-mode
 
 dependencies:
 - base >= 4.13 && < 5

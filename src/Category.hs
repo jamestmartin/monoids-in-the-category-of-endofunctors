@@ -1,40 +1,26 @@
-{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Category where
+module Category
+    ( module Category.Base
+    , module Category.Functor.Base
+    , module Category.Natural
+    , Monoidal, Unit, Product, monBi, monIdLI, monIdRI, monIdLE, monIdRE, monAssocL, monAssocR
+    , BiEndo, biendomap
+    , ProEndo, diendomap
+    , Bi, bimap
+    , Pro, dimap
+    , Semigroup, append
+    , Monoid, empty
+    , Applicative, pure, ap
+    , Monad, join
+    ) where
 
-import Category.Start qualified as Star
-import Control.Category (Category, id, (.))
-import Data.Dict (Dict (Dict), (:-) (Sub), (\\))
+import Category.Base
+import Category.Constraint
+import Category.Functor.Base
+import Category.Natural
+import Category.Star qualified as Star
 import Data.Kind (Type)
-
--- | An unenriched hom.
-type family (~>) :: i -> i -> Type
-type instance (~>) = (->)
-type instance (~>) = (:-)
-
-type Dom (a :: i) = (~>) :: i -> i -> Type
-
--- | An covariant endofunctor in an unenriched category.
-class Category cat => CovariantEndo cat f where
-    coendomap :: cat a b -> cat (f a) (f b)
-
-instance {-# OVERLAPPABLE #-} Star.Functor f => CovariantEndo (->) f where
-    coendomap = Star.fmap
-
--- | A contravariant endofunctor in an unenriched category.
-class Category cat => ContravariantEndo cat f where
-    contraendomap :: cat b a -> cat (f a) (f b)
-
-instance Star.Contravariant f => ContravariantEndo (->) f where
-    contraendomap = Star.contramap
-
--- | An invariant endofunctor (if that's even considered a functor) in an unenriched category.
-class Category cat => InvariantEndo cat f where
-    invendomap :: cat a b -> cat b a -> cat (f a) (f b)
-
-instance {-# OVERLAPPABLE #-} Star.Invariant f => InvariantEndo (->) f where
-    invendomap = Star.invmap
 
 -- | A bi-endofunctor in an unenriched category covariant in both arguments.
 class Category cat => BiEndo cat f where
@@ -49,27 +35,6 @@ class Category cat => ProEndo cat f where
 
 instance {-# OVERLAPPABLE #-} Star.Profunctor f => ProEndo (->) f where
     diendomap = Star.dimap
-
--- | A covariant functor between unenriched categories.
-class (Category dom, Category cod) => Covariant dom cod f where
-    comap :: dom a b -> cod (f a) (f b)
-
-instance {-# OVERLAPPABLE #-} CovariantEndo cat f => Covariant cat cat f where
-    comap = coendomap
-
--- | A contravariant functor between unenriched categories.
-class (Category dom, Category cod) => Contravariant dom cod f where
-    contramap :: dom b a -> cod (f a) (f b)
-
-instance {-# OVERLAPPABLE #-} ContravariantEndo cat f => Contravariant cat cat f where
-    contramap = contraendomap
-
--- | An invariant functor (if that's even considered a functor) between unenriched categories.
-class (Category dom, Category cod) => Invariant dom cod f where
-    invmap :: dom a b -> dom b a -> cod (f a) (f b)
-
-instance {-# OVERLAPPABLE #-} InvariantEndo cat f => Invariant cat cat f where
-    invmap = invendomap
 
 -- | A bifunctor in an unenriched category covariant in both arguments.
 class (Category dom, Category cod) => Bi dom cod f where
@@ -125,7 +90,7 @@ instance {-# OVERLAPPABLE #-} Star.Monoid s => Monoid (->) s where
     empty () = Star.mempty
 
 -- | An applicative functor.
-class (Monoidal cat, CovariantEndo cat f) => Applicative cat f where
+class (Monoidal cat, Endofunctor cat f) => Applicative cat f where
     pure :: a `cat` f a
     ap :: Product cat (f (a `cat` b)) (f a) `cat` f b
 
@@ -139,16 +104,6 @@ class Applicative cat m => Monad cat m where
 
 instance {-# OVERLAPPABLE #-} Star.Monad m => Monad (->) m where
     join = Star.join
-
-newtype Nat f g = Nat { runNat :: forall a. f a ~> g a }
-
-type instance (~>) = Nat
-
-type D (hom :: (i -> j) -> (i -> j) -> Type) = (~>) :: j -> j -> Type
-
-instance (nat ~ Nat, Category (D nat)) => Category (nat :: (i -> j) -> (i -> j) -> Type) where
-    id = Nat id
-    Nat f . Nat g = Nat (f . g)
 
 class AnyC a
 instance AnyC a
