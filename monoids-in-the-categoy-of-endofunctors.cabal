@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dbc9287122d243040cde8135abd883bf209073c191d5ece40c561f33abfbd4c8
+-- hash: d2b69687ecaa1f177ecb0533b202092619c3c90b1107255e2fdaef7e70b84af5
 
 name:           monoids-in-the-categoy-of-endofunctors
 version:        0.1.0.0
@@ -29,19 +29,17 @@ library
       Category
       Category.Base
       Category.Constraint
-      Category.Functor.Base
-      Category.Natural
-      Category.Star
+      Category.Functor
+      Category.Functor.Foldable
       Data.Dict
-      Data.Recursive
+      Data.Fin
+      Data.Nat
   other-modules:
       Paths_monoids_in_the_categoy_of_endofunctors
   hs-source-dirs:
       src
-  default-extensions: BlockArguments ConstraintKinds DataKinds FlexibleContexts FlexibleInstances FunctionalDependencies GADTs ImportQualifiedPost InstanceSigs LambdaCase MultiParamTypeClasses NoImplicitPrelude PolyKinds RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
+  default-extensions: BlockArguments ConstraintKinds DataKinds DefaultSignatures FlexibleContexts FlexibleInstances FunctionalDependencies GADTs ImportQualifiedPost InstanceSigs LambdaCase MultiParamTypeClasses NoImplicitPrelude PolyKinds QuantifiedConstraints RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
   ghc-options: -Weverything -Wno-missing-export-lists -Wno-missing-import-lists -Wno-safe -Wno-missing-safe-haskell-mode
   build-depends:
       base >=4.13 && <5
-    , invariant >=0.5 && <0.6
-    , profunctors >=5.5 && <6
   default-language: Haskell2010

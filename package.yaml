@@ -15,6 +15,7 @@ default-extensions:
 - BlockArguments
 - ConstraintKinds
 - DataKinds
+- DefaultSignatures
 - FlexibleContexts
 - FlexibleInstances
 - FunctionalDependencies
@@ -25,6 +26,7 @@ default-extensions:
 - MultiParamTypeClasses
 - NoImplicitPrelude
 - PolyKinds
+- QuantifiedConstraints
 - RankNTypes
 - ScopedTypeVariables
 - TypeApplications
@@ -41,8 +43,6 @@ ghc-options:
 
 dependencies:
 - base >= 4.13 && < 5
-- invariant >= 0.5 && < 0.6
-- profunctors >= 5.5 && < 6
 
 library:
   source-dirs: src

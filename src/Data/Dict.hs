@@ -1,4 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
 module Data.Dict where
 
 data Dict c where

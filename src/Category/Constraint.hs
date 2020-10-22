@@ -1,4 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
 module Category.Constraint
     ( module Data.Dict
     , (:-) (Sub)
@@ -10,11 +9,12 @@ import Data.Dict
 
 newtype a :- b = Sub (a => Dict b)
 
-type instance (~>) = (:-)
-
 (\\) :: a => (b => c) -> (a :- b) -> c
 r \\ Sub Dict = r
 
-instance Category (:-) where
-    id = Sub Dict
+instance Semigroupoid (:-) where
     f . g = Sub (Dict \\ f \\ g)
+
+instance Category (:-) where
+    src _ = Sub Dict
+    tgt _ = Sub Dict
