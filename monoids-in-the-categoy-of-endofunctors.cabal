@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d2b69687ecaa1f177ecb0533b202092619c3c90b1107255e2fdaef7e70b84af5
+-- hash: ccbe65df6ff8c44717a5cad0ce46e39a026a6e35f58b942545be94a2080cc645
 
 name:           monoids-in-the-categoy-of-endofunctors
 version:        0.1.0.0
@@ -34,6 +34,8 @@ library
       Data.Dict
       Data.Fin
       Data.Nat
+      Data.Vec
+      Quantifier
   other-modules:
       Paths_monoids_in_the_categoy_of_endofunctors
   hs-source-dirs:

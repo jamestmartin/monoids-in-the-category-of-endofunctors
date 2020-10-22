@@ -40,8 +40,8 @@ instance Corecursive Fin where
         FZF -> FZ
         (FSF r) -> FS r
 
-fin2nat :: Nat (:~:) (->) Fin (Const N)
+fin2nat :: Nat (:~:) (->) Fin (Const (:~:) N)
 fin2nat = cata (Nat \_ -> alg)
-    where alg :: FinF (Const N) n -> Const N n
+    where alg :: FinF (Const (:~:) N) n -> Const (:~:) N n
           alg FZF = Const Z
           alg (FSF (Const n)) = Const (S n)

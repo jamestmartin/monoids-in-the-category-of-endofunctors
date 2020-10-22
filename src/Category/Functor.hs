@@ -3,6 +3,8 @@ module Category.Functor where
 
 import Category.Base
 import Data.Kind (Type)
+import Data.Maybe (Maybe (Nothing, Just))
+import Quantifier
 
 class (Category (Dom f), Category (Cod f)) => Functor (f :: i -> j) where
     type Dom f :: i -> i -> Type
@@ -17,6 +19,9 @@ instance (Functor f, Dom f ~ Cod f) => Endofunctor f
 
 data Nat (q :: i -> i -> Type) (r :: j -> j -> Type) (f :: i -> j) (g :: i -> j) :: Type where
     Nat :: (FunctorOf q r f, FunctorOf q r g) => (forall a. Obj q a -> r (f a) (g a)) -> Nat q r f g
+
+runNat :: Nat q r f g -> forall a. Obj q a -> r (f a) (g a)
+runNat (Nat f) = f
 
 instance Semigroupoid r => Semigroupoid (Nat q r) where
     (.) (Nat f) (Nat g) = Nat \p -> (f p . g p)
@@ -58,15 +63,26 @@ type Cod2 p = NatCod (Cod p)
 class (Functor p, Cod p ~ Nat (Dom2 p) (Cod2 p), Category (Dom2 p), Category (Cod2 p)) => Bifunctor (p :: i -> j -> k)
 instance (Functor p, Cod p ~ Nat (Dom2 p) (Cod2 p), Category (Dom2 p), Category (Cod2 p)) => Bifunctor (p :: i -> j -> k)
 
-newtype Const a b = Const { getConst :: a }
+newtype Const (cat :: i -> i -> Type) (a :: Type) (b :: i) = Const { getConst :: a }
 
-instance Functor (Const a) where
+instance Category cat => Functor (Const cat a) where
     -- FIXME
-    type Dom (Const a) = (:~:)
-    type Cod (Const a) = (->)
+    type Dom (Const cat a) = cat
+    type Cod (Const cat a) = (->)
     map _ (Const x) = Const x
 
-instance Functor Const where
-    type Dom Const = (->)
-    type Cod Const = Nat (:~:) (->)
+instance Category cat => Functor (Const cat) where
+    type Dom (Const cat) = (->)
+    type Cod (Const cat) = Nat cat (->)
     map f = Nat \_ -> \case (Const x) -> Const (f x)
+
+instance Functor Maybe where
+    type Dom Maybe = (->)
+    type Cod Maybe = (->)
+    map _ Nothing = Nothing
+    map f (Just x) = Just (f x)
+
+instance {-# OVERLAPPABLE #-} Pi ty => Functor (Ty ty) where
+    type Dom (Ty ty) = (:~:)
+    type Cod (Ty ty) = (->)
+    map Refl x = x

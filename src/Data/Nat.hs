@@ -2,57 +2,65 @@ module Data.Nat where
 
 import Category
 import Category.Functor.Foldable
+import Data.Kind (Type)
+import Data.Maybe (Maybe (Nothing, Just))
+import Quantifier
 
 data N = Z | S N
-data NF r = ZF | SF r
-type instance Base N = NF
 
-instance Functor NF where
-    type Dom NF = (->)
-    type Cod NF = (->)
-    map _ ZF = ZF
-    map f (SF r) = SF (f r)
+instance Pi N where
+    type PiCat N = (->)
+    data Ty N :: N -> Type where
+        ZTy :: Ty N 'Z
+        STy :: Ty N n -> Ty N ('S n)
+    depi ZTy = Z
+    depi (STy n) = S (depi n)
+
+class NTyC n where
+    nTy :: Ty N n
+instance NTyC 'Z where
+    nTy = ZTy
+instance NTyC n => NTyC ('S n) where
+    nTy = STy nTy
+
+instance PiC N where
+    type TyC N = NTyC
+    depic = nTy
+
+data NTyF r n where
+    ZTyF :: NTyF r 'Z
+    STyF :: r n -> NTyF r ('S n)
+
+instance Functor (NTyF r) where
+    type Dom (NTyF r) = (:~:)
+    type Cod (NTyF r) = (->)
+    map Refl x = x
+
+instance Functor NTyF where
+    type Dom NTyF = Nat (:~:) (->)
+    type Cod NTyF = Nat (:~:) (->)
+    map (Nat f) = Nat \_ -> \case
+        ZTyF -> ZTyF
+        (STyF r) -> STyF (f Refl r)
+
+type instance Base N = Maybe
 
 instance Recursive N where
-    project Z = ZF
-    project (S n) = SF n
+    project Z = Nothing
+    project (S n) = Just n
 
 instance Corecursive N where
-    embed ZF = Z
-    embed (SF n) = S n
+    embed Nothing = Z
+    embed (Just n) = S n
 
-data NTy n where
-    ZTy :: NTy 'Z
-    STy :: NTy n -> NTy ('S n)
-data NFTy r n where
-    ZFTy :: NFTy r 'Z
-    SFTy :: r n -> NFTy r ('S n)
-type instance Base NTy = NFTy
+type instance Base (Ty N) = NTyF
 
-instance Functor NTy where
-    type Dom NTy = (:~:)
-    type Cod NTy = (->)
-    map Refl x = x
-
-instance Functor (NFTy r) where
-    type Dom (NFTy r) = (:~:)
-    type Cod (NFTy r) = (->)
-    map Refl x = x
-
-instance Functor NFTy where
-    type Dom NFTy = Nat (:~:) (->)
-    type Cod NFTy = Nat (:~:) (->)
-
-    map (Nat f) = Nat \_ -> \case
-        ZFTy -> ZFTy
-        (SFTy r) -> SFTy (f Refl r)
-
-instance Recursive NTy where
+instance Recursive (Ty N) where
     project = Nat \_ -> \case
-        ZTy -> ZFTy
-        (STy r) -> SFTy r
+        ZTy -> ZTyF
+        (STy r) -> STyF r
 
-instance Corecursive NTy where
+instance Corecursive (Ty N) where
     embed = Nat \_ -> \case
-        ZFTy -> ZTy
-        (SFTy r) -> STy r
+        ZTyF -> ZTy
+        (STyF r) -> STy r
