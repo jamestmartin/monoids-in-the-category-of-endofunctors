@@ -26,23 +26,24 @@ instance Functor (FinF r) where
 instance Functor FinF where
     type Dom FinF = Nat (:~:) (->)
     type Cod FinF = Nat (:~:) (->)
+    map_ = Sub Dict
     map :: forall f g. Nat (:~:) (->) f g -> Nat (:~:) (->) (FinF f) (FinF g)
-    map (Nat f) = Nat \_ -> \case
+    map (Nat f) = Nat \case
         FZF -> FZF
-        (FSF r) -> FSF (f Refl r)
+        (FSF r) -> FSF (f r)
 
 instance Recursive Fin where
-    project = Nat \_ -> \case
+    project = Nat \case
         FZ -> FZF
         (FS r) -> FSF r
 
 instance Corecursive Fin where
-    embed = Nat \_ -> \case
+    embed = Nat \case
         FZF -> FZ
         (FSF r) -> FS r
 
 fin2nat :: Nat (:~:) (->) Fin (Const (:~:) N)
-fin2nat = cata (Nat \_ -> alg)
+fin2nat = cata (Nat alg)
     where alg :: FinF (Const (:~:) N) n -> Const (:~:) N n
           alg FZF = Const Z
           alg (FSF (Const n)) = Const (S n)

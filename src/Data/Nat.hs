@@ -10,7 +10,6 @@ import Quantifier
 data N = Z | S N
 
 instance Pi N where
-    type PiCat N = (->)
     data Ty N :: N -> Type where
         ZTy :: Ty N 'Z
         STy :: Ty N n -> Ty N ('S n)
@@ -40,9 +39,10 @@ instance Functor (NTyF r) where
 instance Functor NTyF where
     type Dom NTyF = Nat (:~:) (->)
     type Cod NTyF = Nat (:~:) (->)
-    map (Nat f) = Nat \_ -> \case
+    map_ = Sub Dict
+    map (Nat f) = Nat \case
         ZTyF -> ZTyF
-        (STyF r) -> STyF (f Refl r)
+        (STyF r) -> STyF (f r)
 
 type instance Base N = Maybe
 
@@ -57,11 +57,11 @@ instance Corecursive N where
 type instance Base (Ty N) = NTyF
 
 instance Recursive (Ty N) where
-    project = Nat \_ -> \case
+    project = Nat \case
         ZTy -> ZTyF
         (STy r) -> STyF r
 
 instance Corecursive (Ty N) where
-    embed = Nat \_ -> \case
+    embed = Nat \case
         ZTyF -> ZTy
         (STyF r) -> STy r

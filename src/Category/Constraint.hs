@@ -16,5 +16,4 @@ instance Semigroupoid (:-) where
     f . g = Sub (Dict \\ f \\ g)
 
 instance Category (:-) where
-    src _ = Sub Dict
-    tgt _ = Sub Dict
+    id = Sub Dict

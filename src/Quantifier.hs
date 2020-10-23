@@ -5,7 +5,6 @@ import Data.Maybe (Maybe (Nothing, Just))
 
 -- | An explicit dependent quantifier.
 class Pi (ty :: Type) where
-    type PiCat ty :: i -> i -> Type
     data Ty ty :: ty -> Type
     depi :: forall a. Ty ty a -> ty
 

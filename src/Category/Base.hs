@@ -1,22 +1,27 @@
 module Category.Base where
 
-import Data.Kind (Type)
+import Data.Dict (Dict (Dict))
+import Data.Kind (Constraint, Type)
 
-type Obj q a = a `q` a
+class Vacuous (a :: i)
+instance Vacuous (a :: i)
 
 class Semigroupoid (q :: i -> i -> Type) where
+    type Obj q :: i -> Constraint
+    type Obj _ = Vacuous
+    observe :: a `q` b -> Dict (Obj q a, Obj q b)
+    default observe :: Obj q ~ Vacuous => a `q` b -> Dict (Obj q a, Obj q b)
+    observe _ = Dict
     (.) :: b `q` c -> a `q` b -> a `q` c
 
 instance Semigroupoid (->) where
     (.) f g x = f (g x)
 
 class Semigroupoid q => Category q where
-    src :: a `q` b -> Obj q a
-    tgt :: a `q` b -> Obj q b
+    id :: Obj q a => a `q` a
 
 instance Category (->) where
-    src _ x = x
-    tgt _ x = x
+    id x = x
 
 class Category q => Groupoid q where
     inv :: a `q` b -> b `q` a
@@ -24,11 +29,12 @@ class Category q => Groupoid q where
 newtype Yoneda (q :: i -> i -> Type) (a :: i) (b :: i) = Op { getOp :: b `q` a }
 
 instance Semigroupoid q => Semigroupoid (Yoneda q) where
+    type Obj (Yoneda q) = Obj q
+    observe (Op f) = case observe f of Dict -> Dict
     Op f . Op g = Op (g . f)
 
 instance Category q => Category (Yoneda q) where
-    src (Op f) = Op (tgt f)
-    tgt (Op f) = Op (src f)
+    id = Op id
 
 type family Op (q :: i -> i -> Type) :: i -> i -> Type where
     Op (Yoneda q) = q
@@ -44,8 +50,7 @@ instance Semigroupoid (:~:) where
     Refl . Refl = Refl
 
 instance Category (:~:) where
-    src _ = Refl
-    tgt _ = Refl
+    id = Refl
 
 instance Groupoid (:~:) where
     inv Refl = Refl
@@ -56,8 +61,7 @@ instance Semigroupoid Unit where
     Unit . Unit = Unit
 
 instance Category Unit where
-    src _ = Unit
-    tgt _ = Unit
+    id = Unit
 
 instance Groupoid Unit where
     inv _ = Unit

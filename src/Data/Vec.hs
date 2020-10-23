@@ -5,7 +5,7 @@ import Category.Functor.Foldable
 import Data.Fin
 import Data.Kind (Type)
 import Data.Nat
-import Quantifier
+import Prelude (($))
 
 data Vec a :: N -> Type where
     VZ :: Vec a 'Z
@@ -23,9 +23,10 @@ instance Functor (Vec a) where
 instance Functor Vec where
     type Dom Vec = (->)
     type Cod Vec = Nat (:~:) (->)
-    map f = Nat \_ -> \case
+    map_ = Sub Dict
+    map f = Nat \case
         VZ -> VZ
-        (VS x r) -> VS (f x) (runNat (map f) Refl r)
+        (VS x r) -> VS (f x) (runNat (map f) r)
 
 instance Functor (VecF a r) where
     type Dom (VecF a r) = (:~:)
@@ -35,14 +36,16 @@ instance Functor (VecF a r) where
 instance Functor (VecF a) where
     type Dom (VecF a) = Nat (:~:) (->)
     type Cod (VecF a) = Nat (:~:) (->)
-    map (Nat f) = Nat \_ -> \case
+    map_ = Sub Dict
+    map (Nat f) = Nat \case
         VZF -> VZF
-        (VSF x r) -> VSF x (f Refl r)
+        (VSF x r) -> VSF x (f r)
 
 instance Functor VecF where
     type Dom VecF = (->)
     type Cod VecF = Nat (Nat (:~:) (->)) (Nat (:~:) (->))
-    map f = Nat \_ -> Nat \_ -> \case
+    map_ = Sub Dict
+    map f = Nat $ Nat \case
         VZF -> VZF
         (VSF x r) -> VSF (f x) r
 
@@ -54,9 +57,9 @@ instance Functor (Ixr ty r) where
     map Refl x = x
 
 indexer :: Nat (:~:) (->) Fin (Ixr (Vec a) a)
-indexer = cata (Nat \_ -> \case
+indexer = cata $ Nat \case
     FZF -> Ixr \case VS x _ -> x
-    (FSF (Ixr r)) -> Ixr \case VS x xs -> r xs)
+    (FSF (Ixr r)) -> Ixr \case VS _ xs -> r xs
 
 index :: Fin n -> Vec a n -> a
-index = getIxr . runNat indexer Refl
+index = getIxr . runNat indexer
