@@ -3,6 +3,7 @@ module Category.Functor where
 
 import Category.Base
 import Category.Constraint ((:-) (Sub), Dict (Dict))
+import Data.Either (Either (Left, Right))
 import Data.Kind (Type)
 import Data.Maybe (Maybe (Nothing, Just))
 import Quantifier
@@ -78,6 +79,20 @@ instance Functor ((,) a) where
     type Dom ((,) a) = (->)
     type Cod ((,) a) = (->)
     map f (x, y) = (x, f y)
+
+instance Functor Either where
+    type Dom Either = (->)
+    type Cod Either = Nat (->) (->)
+    map_ = Sub Dict
+    map f = Nat \case
+        Left  x -> Left (f x)
+        Right y -> Right y
+
+instance Functor (Either a) where
+    type Dom (Either a) = (->)
+    type Cod (Either a) = (->)
+    map _ (Left x)  = Left x
+    map f (Right y) = Right (f y)
 
 instance Functor Dict where
     type Dom Dict = (:-)

@@ -2,12 +2,14 @@ module Data.Nat where
 
 import Category
 import Category.Functor.Foldable
-import Category.Functor.Foldable.TH
 import Data.Kind (Type)
 import Data.Maybe (Maybe (Nothing, Just))
 import Quantifier
 
 data N = Z | S N
+
+inf :: N
+inf = S inf
 
 instance Pi N where
     data Ty N :: N -> Type where
@@ -65,3 +67,15 @@ instance Corecursive (Ty N) where
     embed = Nat \case
         ZTyF -> ZTy
         (STyF r) -> STy r
+
+type family (:+) (m :: N) (n :: N) :: N where
+    'Z   :+ n =          n
+    'S m :+ n = 'S (m :+ n)
+
+injective :: forall m n. Ty N m -> ('S m ~ 'S n) :- (m ~ n)
+injective ZTy = Sub Dict
+injective (STy i) = case injective i of Sub Dict -> Sub Dict
+
+rightZero :: forall m. Ty N m -> Dict ((m :+ 'Z) ~ m)
+rightZero ZTy = Dict
+rightZero (STy i) = case rightZero i of Dict -> Dict

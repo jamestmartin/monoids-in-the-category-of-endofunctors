@@ -6,6 +6,9 @@ import Data.Kind (Constraint, Type)
 class Vacuous (a :: i)
 instance Vacuous (a :: i)
 
+class Bottom (a :: i) where
+    bottom :: forall b proxy. proxy a -> b
+
 class Semigroupoid (q :: i -> i -> Type) where
     type Obj q :: i -> Constraint
     type Obj _ = Vacuous
@@ -54,14 +57,3 @@ instance Category (:~:) where
 
 instance Groupoid (:~:) where
     inv Refl = Refl
-
-data Unit a b = Unit
-
-instance Semigroupoid Unit where
-    Unit . Unit = Unit
-
-instance Category Unit where
-    id = Unit
-
-instance Groupoid Unit where
-    inv _ = Unit
