@@ -1,5 +1,10 @@
-{-# LANGUAGE TemplateHaskell #-}
+-- | This module is incomplete and buggy! Do not use it!
 module Category.Functor.Foldable.TH where
+
+--
+-- This code was my first time writing template Haskell.
+-- It was shoddily thrown together and is in severe need of a rewrite.
+--
 
 import Data.Char (GeneralCategory (..), generalCategory)
 import Data.Maybe (fromMaybe, isNothing)

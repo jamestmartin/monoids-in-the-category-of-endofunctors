@@ -3,11 +3,9 @@ module Category.Base where
 import Data.Dict (Dict (Dict))
 import Data.Kind (Constraint, Type)
 
+-- | A typeclass which is implemented for everything.
 class Vacuous (a :: i)
 instance Vacuous (a :: i)
-
-class Bottom (a :: i) where
-    bottom :: forall b proxy. proxy a -> b
 
 class Semigroupoid (q :: i -> i -> Type) where
     type Obj q :: i -> Constraint
@@ -15,6 +13,7 @@ class Semigroupoid (q :: i -> i -> Type) where
     observe :: a `q` b -> Dict (Obj q a, Obj q b)
     default observe :: Obj q ~ Vacuous => a `q` b -> Dict (Obj q a, Obj q b)
     observe _ = Dict
+    -- | Associative composition of morphisms.
     (.) :: b `q` c -> a `q` b -> a `q` c
 
 instance Semigroupoid (->) where

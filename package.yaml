@@ -26,6 +26,7 @@ default-extensions:
 - LambdaCase
 - MultiParamTypeClasses
 - NoImplicitPrelude
+- PatternSynonyms
 - PolyKinds
 - QuantifiedConstraints
 - RankNTypes
@@ -33,6 +34,7 @@ default-extensions:
 - TypeApplications
 - TypeFamilies
 - TypeOperators
+- ViewPatterns
 
 ghc-options:
 - -Weverything
