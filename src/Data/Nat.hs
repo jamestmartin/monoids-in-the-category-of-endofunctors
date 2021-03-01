@@ -1,8 +1,10 @@
 -- | The natural numbers and associated types and functions.
 module Data.Nat where
 
-import Category
+import Category.Functor
 import Category.Functor.Foldable
+import Data.Dict
+import Data.Identity
 import Data.Kind (Type)
 import Data.Maybe (Maybe (Nothing, Just))
 import Quantifier
@@ -39,37 +41,30 @@ data NTyF r n where
     ZTyF :: NTyF r 'Z
     STyF :: r n -> NTyF r ('S n)
 
-instance Functor (NTyF r) where
-    type Dom (NTyF r) = (:~:)
-    type Cod (NTyF r) = (->)
-    map Refl x = x
-
-instance Functor NTyF where
-    type Dom NTyF = Nat (:~:) (->)
-    type Cod NTyF = Nat (:~:) (->)
-    map_ = Sub Dict
+instance Functor (Nat (->) (:~:)) (Nat (->) (:~:)) NTyF where
+    map_ _ _ = Dict
     map (Nat f) = Nat \case
         ZTyF -> ZTyF
         (STyF r) -> STyF (f r)
 
 type instance Base N = Maybe
 
-instance Recursive N where
+instance Recursive (->) N where
     project Z = Nothing
     project (S n) = Just n
 
-instance Corecursive N where
+instance Corecursive (->) N where
     embed Nothing = Z
     embed (Just n) = S n
 
 type instance Base (Ty N) = NTyF
 
-instance Recursive (Ty N) where
+instance Recursive (Nat (->) (:~:)) (Ty N) where
     project = Nat \case
         ZTy -> ZTyF
         (STy r) -> STyF r
 
-instance Corecursive (Ty N) where
+instance Corecursive (Nat (->) (:~:)) (Ty N) where
     embed = Nat \case
         ZTyF -> ZTy
         (STyF r) -> STy r
@@ -80,9 +75,9 @@ type family (:+) (m :: N) (n :: N) :: N where
     'S m :+ n = 'S (m :+ n)
 
 -- | A proof that the successor function is injective.
-injective :: forall m n. Ty N m -> ('S m ~ 'S n) :- (m ~ n)
-injective ZTy = Sub Dict
-injective (STy i) = case injective i of Sub Dict -> Sub Dict
+injective :: forall m n. Ty N m -> ('S m ~ 'S n) => Dict (m ~ n)
+injective ZTy = Dict
+injective (STy i) = case injective i of Dict -> Dict
 
 -- | A proof that zero is the right identity of addition.
 -- (The constraint solver can prove the left identity on its own.)

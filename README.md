@@ -1,12 +1,15 @@
 # Monoids in the Category of Endofunctors
 This is a **toy** library for studying the field of [Abstract Nonsense](https://en.wikipedia.org/wiki/Abstract_nonsense) through Haskell.
-I would fire anyone who tried to do any of this crap in production.
+Writing this sort of code makes for a fun puzzle, but I want to be *absolutely clear*
+that I would *never* do anything even remotely close to this in a serious codebase.
+If you want to see code more representative of me as a programming practitioner,
+please refer to pretty much any project other than this one.
 
 This library currently includes:
 * Category theory (`Category`)
 * Recursion schemes (`Category.Functor.Foldable`)
 * Dependent types, type-level programming, and codata (`Data`)
-* Dependent quantifiers (as a typeclass; `Quantifier`)
+* Dependent quantifiers (implemented with the help of a typeclass; `Quantifier`)
 
 For further information, build and read the Haddock.
 

@@ -2,136 +2,106 @@
 module Category.Functor where
 
 import Category.Base
-import Category.Constraint ((:-) (Sub), Dict (Dict))
+import Data.Dict
 import Data.Either (Either (Left, Right))
-import Data.Kind (Type)
+import Data.Kind (Constraint, FUN, Type)
 import Data.Maybe (Maybe (Nothing, Just))
-import Quantifier
+import Data.Proxy
 
-class (Category (Dom f), Category (Cod f)) => Functor (f :: i -> j) where
-    type Dom f :: i -> i -> Type
-    type Cod f :: j -> j -> Type
-    map_ :: Obj (Dom f) a :- Obj (Cod f) (f a)
-    default map_ :: Obj (Cod f) ~ Vacuous => Obj (Dom f) a :- Obj (Cod f) (f a)
-    map_ = Sub Dict
-    map :: Dom f a b -> Cod f (f a) (f b)
+type Functor :: (j -> j -> Type) -> (i -> i -> Type) -> (i -> j) -> Constraint
+class (Category dest, Category src) => Functor dest src f where
+    map_ :: Obj src a => proxy dest -> proxy' src -> Dict (Obj dest (f a))
+    default map_ :: forall proxy proxy' a. Obj dest ~ Unconst1 => proxy dest -> proxy' src -> Dict (Obj dest (f a))
+    map_ _ _ = Dict
+    map :: src a b -> dest (f a) (f b)
 
-class (Functor f, Dom f ~ q, Cod f ~ r) => FunctorOf q r f
-instance (Functor f, Dom f ~ q, Cod f ~ r) => FunctorOf q r f
+type Endo f a = f a a
+type Endofunctor :: (i -> i -> Type) -> (i -> i) -> Constraint
+class Endo Functor morph f => Endofunctor morph f where
+instance Endo Functor morph f => Endofunctor morph f
+endomap :: Endofunctor morph f => morph a b -> morph (f a) (f b)
+endomap = map
 
-class (Functor f, Dom f ~ Cod f) => Endofunctor f
-instance (Functor f, Dom f ~ Cod f) => Endofunctor f
+class Contravariant dest src f where
+    contramap :: src b a -> dest (f a) (f b)
 
-data Nat (q :: i -> i -> Type) (r :: j -> j -> Type) (f :: i -> j) (g :: i -> j) :: Type where
-    Nat :: (FunctorOf q r f, FunctorOf q r g) => { runNat :: forall a. Obj q a => r (f a) (g a) } -> Nat q r f g
+instance {-# INCOHERENT #-} Functor dest (Yoneda src) f => Contravariant dest src f where
+    contramap f = map (Op f)
 
-instance Semigroupoid r => Semigroupoid (Nat q r) where
-    type Obj (Nat q r) = FunctorOf q r
-    observe (Nat _) = Dict
-    (.) (Nat f) (Nat g) = Nat (f . g)
+instance {-# INCOHERENT #-} Functor dest src f => Contravariant dest (Yoneda src) f where
+    contramap (Op f) = map f
 
-instance Category r => Category (Nat q r) where
-    id :: forall f. Obj (Nat q r) f => Nat q r f f
+-- FIXME:
+--   I'm not convinced this definition is sufficient.
+--   Don't feel like explaining why. Hopefully it won't be too long before I fix it.
+--   I'd hate to forget~
+type Bifunctor :: (j -> j -> Type) -> (i -> i -> Type) -> (i -> i -> j) -> Constraint
+class (Functor (Nat dest src) src f, forall x. Functor dest src (f x)) => Bifunctor dest src f
+instance (Functor (Nat dest src) src f, forall x. Functor dest src (f x)) => Bifunctor dest src f
+bimap :: forall dest src f a b c d. Bifunctor dest src f => src a c -> src b d -> dest (f a b) (f c d)
+bimap f g = case obj g of Dict -> runNat @_ @_ @dest @src (map f) . map g
+--first :: forall dest src f a b c d. Bifunctor dest src f => src a b -> dest (f a c) (f b c)
+--first f = runNat @_ @_ @dest @src (map f)
+second :: Bifunctor dest src f => src b c -> dest (f a b) (f a c)
+second g = map g
+
+type Profunctor :: (j -> j -> Type) -> (i -> i -> Type) -> (i -> i -> j) -> Constraint
+class (Functor (Nat dest src) (Yoneda src) f, forall x. Functor dest src (f x)) => Profunctor dest src f
+instance (Functor (Nat dest src) (Yoneda src) f, forall x. Functor dest src (f x)) => Profunctor dest src f
+dimap :: forall dest src f a b c d. Profunctor dest src f => src a b -> src c d -> dest (f b c) (f a d)
+dimap f g = case obj g of Dict -> runNat @_ @_ @dest @src (map (Op f)) . map g
+
+type Nat :: (j -> j -> Type) -> (i -> i -> Type) -> (i -> j) -> (i -> j) -> Type
+data Nat dest src f g = (Functor dest src f, Functor dest src g) => Nat { runNat :: !(forall a. Obj src a => dest (f a) (g a)) }
+
+instance Category dest => Category (Nat dest src) where
+    type Obj (Nat dest src) = Functor dest src
+    obj (Nat _) = Dict
+    id :: forall f. Obj (Nat dest src) f => Nat dest src f f
     id = Nat id'
-      where id' :: forall a. Obj q a => r (f a) (f a)
-            id' = case map_ :: Obj q a :- Obj r (f a) of Sub Dict -> id
+        where id' :: forall a. Obj src a => dest (f a) (f a)
+              id' = case map_ (Proxy @dest) (Proxy @src) :: Dict (Obj dest (f a)) of Dict -> id
+    Nat f . Nat g = Nat (f . g)
 
-instance Functor (->) where
-    type Dom (->) = Op (->)
-    type Cod (->) = Nat (->) (->)
-    map_ = Sub Dict
-    map (Op f) = Nat (. f)
+instance Functor (->) (FUN m) (FUN m a) where
+    map f = \g -> f . g
 
-instance Functor ((->) a) where
-    type Dom ((->) a) = (->)
-    type Cod ((->) a) = (->)
-    map f g = f . g
+instance Functor (Nat (->) (FUN m)) (Yoneda (FUN m)) (FUN m) where
+    map_ _ _ = Dict
+    map (Op f) = Nat \g -> g . f
 
-instance Functor (:-) where
-    type Dom (:-) = Op (:-)
-    type Cod (:-) = Nat (:-) (->)
-    map_ = Sub Dict
-    map (Op f) = Nat (. f)
-
-instance Functor ((:-) a) where
-    type Dom ((:-) a) = (:-)
-    type Cod ((:-) a) = (->)
-    map = (.)
-
-instance Functor (:~:) where
-    type Dom (:~:) = (:~:)
-    type Cod (:~:) = Nat (:~:) (->)
-    map_ = Sub Dict
-    map Refl = Nat id
-
-instance Functor ((:~:) a) where
-    type Dom ((:~:) a) = (:~:)
-    type Cod ((:~:) a) = (->)
-    map = (.)
-
-instance Functor (,) where
-    type Dom (,) = (->)
-    type Cod (,) = Nat (->) (->)
-    map_ = Sub Dict
+instance Functor (Nat (FUN m) (FUN m)) (FUN m) (,) where
+    map_ _ _ = Dict
     map f = Nat \(x, y) -> (f x, y)
 
-instance Functor ((,) a) where
-    type Dom ((,) a) = (->)
-    type Cod ((,) a) = (->)
-    map f (x, y) = (x, f y)
+instance Functor (FUN m) (FUN m) ((,) a) where
+    map f = \(x, y) -> (x, f y)
 
-instance Functor Either where
-    type Dom Either = (->)
-    type Cod Either = Nat (->) (->)
-    map_ = Sub Dict
+instance Functor (Nat (FUN m) (FUN m)) (FUN m) Either where
+    map_ _ _ = Dict
     map f = Nat \case
-        Left  x -> Left (f x)
-        Right y -> Right y
+        Left y -> Left (f y)
+        Right x -> Right x
 
-instance Functor (Either a) where
-    type Dom (Either a) = (->)
-    type Cod (Either a) = (->)
-    map _ (Left x)  = Left x
-    map f (Right y) = Right (f y)
+instance Functor (FUN m) (FUN m) (Either a) where
+    map f = \case
+        Left y -> Left y
+        Right x -> Right (f x)
 
-instance Functor Dict where
-    type Dom Dict = (:-)
-    type Cod Dict = (->)
-    map f Dict = case f of Sub Dict -> Dict
+instance Functor (FUN m) (FUN m) Maybe where
+    map f = \case
+        Nothing -> Nothing
+        Just x -> Just (f x)
 
-type family NatDom (f :: (i -> j) -> (i -> j) -> Type) :: (i -> i -> Type) where
-    NatDom (Nat p _) = p
+instance {-# INCOHERENT #-} Category src => Functor (FUN m) src Proxy where
+    map _ = \Proxy -> Proxy
 
-type family NatCod (f :: (i -> j) -> (i -> j) -> Type) :: (j -> j -> Type) where
-    NatCod (Nat _ q) = q
+type Const :: Type -> i -> Type
+newtype Const a b = Const { getConst :: a }
 
-type Dom2 p = NatDom (Cod p)
-type Cod2 p = NatCod (Cod p)
+instance Functor (Nat (->) (->)) (->) Const where
+    map_ _ _ = Dict
+    map f = Nat \(Const x) -> Const (f x)
 
-class (Functor p, Cod p ~ Nat (Dom2 p) (Cod2 p), Category (Dom2 p), Category (Cod2 p)) => Bifunctor (p :: i -> j -> k)
-instance (Functor p, Cod p ~ Nat (Dom2 p) (Cod2 p), Category (Dom2 p), Category (Cod2 p)) => Bifunctor (p :: i -> j -> k)
-
-newtype Const (cat :: i -> i -> Type) (a :: Type) (b :: i) = Const { getConst :: a }
-
-instance Category cat => Functor (Const cat a) where
-    -- FIXME
-    type Dom (Const cat a) = cat
-    type Cod (Const cat a) = (->)
-    map _ (Const x) = Const x
-
-instance Category cat => Functor (Const cat) where
-    type Dom (Const cat) = (->)
-    type Cod (Const cat) = Nat cat (->)
-    map_ =  Sub Dict
-    map f = Nat \case (Const x) -> Const (f x)
-
-instance Functor Maybe where
-    type Dom Maybe = (->)
-    type Cod Maybe = (->)
-    map _ Nothing = Nothing
-    map f (Just x) = Just (f x)
-
-instance {-# OVERLAPPABLE #-} Pi ty => Functor (Ty ty) where
-    type Dom (Ty ty) = (:~:)
-    type Cod (Ty ty) = (->)
-    map Refl x = x
+instance {-# INCOHERENT #-} Category src => Functor (->) src (Const a) where
+    map _ = \(Const x) -> Const x

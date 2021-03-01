@@ -5,8 +5,11 @@
 -- 'Proxy' provides a better alternative for passing explicit type arguments.
 module Data.Proxy where
 
+import Data.Kind (Type)
+
 -- | A type family of singletons used for explicit type arguments without TypeApplications.
-data Proxy (a :: i) where
+type Proxy :: i -> Type
+data Proxy a where
     -- | You can specify the type used with @Proxy :: Proxy a@,
     -- or @Proxy \@a@ using TypeApplications.
     --

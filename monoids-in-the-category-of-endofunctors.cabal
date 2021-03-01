@@ -1,11 +1,5 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
---
--- see: https://github.com/sol/hpack
---
--- hash: 09f2a99c2b84f61ffd46f9cbdb6958c3b1ac66bc38e80f8b92e02d5fa0813490
-
 name:           monoids-in-the-category-of-endofunctors
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/jamestmartin/monoids-in-the-categoy-of-endofunctors#readme>
@@ -26,29 +20,79 @@ source-repository head
 
 library
   exposed-modules:
-      Category
       Category.Base
       Category.Constraint
+      Category.Enriched
       Category.Functor
       Category.Functor.Foldable
-      Category.Functor.Foldable.TH
+      Category.Groupoid
       Category.Monoid
       Category.Monoidal
-      Category.Unit
-      Category.Void
+      Category.Semigroup
       Data.Dict
       Data.Fin
+      Data.Identity
       Data.Nat
       Data.Proxy
       Data.Vec
       Quantifier
   other-modules:
-      Paths_monoids_in_the_category_of_endofunctors
   hs-source-dirs:
       src
-  default-extensions: BlockArguments ConstraintKinds DataKinds DefaultSignatures EmptyCase FlexibleContexts FlexibleInstances FunctionalDependencies GADTs ImportQualifiedPost InstanceSigs LambdaCase MultiParamTypeClasses NoImplicitPrelude PatternSynonyms PolyKinds QuantifiedConstraints RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators ViewPatterns
+  default-extensions:
+      ApplicativeDo
+      BangPatterns
+      BinaryLiterals
+      BlockArguments
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveDataTypeable
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      EmptyCase
+      EmptyDataDeriving
+      ExistentialQuantification
+      ExplicitForAll
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      HexFloatLiterals
+      ImportQualifiedPost
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      LinearTypes
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      NamedWildCards
+      NoImplicitPrelude
+      NumericUnderscores
+      OverloadedStrings
+      PartialTypeSignatures
+      PatternSynonyms
+      PolyKinds
+      PostfixOperators
+      QuantifiedConstraints
+      RankNTypes
+      ScopedTypeVariables
+      StandaloneDeriving
+      StandaloneKindSignatures
+      TupleSections
+      TypeApplications
+      TypeFamilyDependencies
+      TypeOperators
+      TypeSynonymInstances
+      ViewPatterns
   ghc-options: -Weverything -Wno-missing-export-lists -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-safe -Wno-unsafe
   build-depends:
-      base >=4.13 && <5
-    , template-haskell >=2.16 && <3
+      base >=4.14 && <5
+    , ghc-prim >=0.7 && <0.8
   default-language: Haskell2010

@@ -1,3 +1,10 @@
+# Stack working files
 .stack-work/
-*~
 stack.yaml.lock
+
+# Cabal working files
+dist/
+dist-newstyle/
+
+# Emacs backup files
+*~

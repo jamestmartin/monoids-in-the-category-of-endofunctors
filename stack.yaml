@@ -1,5 +1,0 @@
-# Required to use GHC 8.10, which is required for ImportQualifiedPost.
-resolver: nightly-2020-10-22
-
-packages:
-- .

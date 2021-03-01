@@ -5,18 +5,18 @@ import Category.Functor
 
 type family Base (t :: i) :: i -> i
 
-class Endofunctor (Base t) => Recursive t where
-    project :: Dom (Base t) t (Base t t)
+class Endofunctor morph (Base t) => Recursive morph t where
+    project :: morph t (Base t t)
 
-class Endofunctor (Base t) => Corecursive t where
-    embed :: Dom (Base t) (Base t t) t
+class Endofunctor morph (Base t) => Corecursive morph t where
+    embed :: morph (Base t t) t
 
-type Algebra f a = Dom f (f a) a
+type Algebra morph f a = morph (f a) a
 
-cata :: Recursive t => Algebra (Base t) a -> Dom (Base t) t a
+cata :: Recursive morph t => Algebra morph (Base t) a -> morph t a
 cata alg = alg . map (cata alg) . project
 
-type Coalgebra f a = Dom f a (f a)
+type Coalgebra morph f a = morph a (f a)
 
-ana :: Corecursive t => Coalgebra (Base t) a -> Dom (Base t) a t
+ana :: Corecursive morph t => Coalgebra morph (Base t) a -> morph a t
 ana coalg = embed . map (ana coalg) . coalg

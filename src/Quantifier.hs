@@ -28,6 +28,10 @@ module Quantifier where
 import Data.Kind (Constraint, Type)
 import Data.Maybe (Maybe (Nothing, Just))
 
+-- | An explicit non-dependent universal quantifier.
+type Forall :: (a -> Type) -> Type
+newtype Forall f = Forall { runForall :: forall proxy x. proxy x -> f x }
+
 -- | A typeclass faciliating explicit dependent quantifiers.
 class Pi (ty :: Type) where
     -- | The type family @`Ty` ty :: ty -> `Type`@ is isomorphic to @ty@,

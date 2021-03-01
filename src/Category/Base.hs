@@ -1,58 +1,42 @@
 module Category.Base where
 
-import Data.Dict (Dict (Dict))
-import Data.Kind (Constraint, Type)
+import Data.Dict
+import Data.Kind (Constraint, FUN, Type)
+import GHC.Types (Multiplicity)
 
--- | A typeclass which is implemented for everything.
-class Vacuous (a :: i)
-instance Vacuous (a :: i)
+-- | A one-parameter typeclass which is always implemented.
+type Unconst1 :: i -> Constraint
+class Unconst1 a
+instance Unconst1 a
 
-class Semigroupoid (q :: i -> i -> Type) where
-    type Obj q :: i -> Constraint
-    type Obj _ = Vacuous
-    observe :: a `q` b -> Dict (Obj q a, Obj q b)
-    default observe :: Obj q ~ Vacuous => a `q` b -> Dict (Obj q a, Obj q b)
-    observe _ = Dict
+type Category :: forall i. (i -> i -> Type) -> Constraint
+-- Scoped type variables does not make `i` in scope with standalone kind signatures,
+-- so this redundant type annotation is necessary.
+class Category (morph :: i -> i -> Type) where
+    type Obj morph :: i -> Constraint
+    type Obj _morph = Unconst1
+    obj :: morph a b -> Dict (Obj morph a, Obj morph b)
+    default obj :: forall a b. Obj morph ~ Unconst1 => morph a b -> Dict (Obj morph a, Obj morph b)
+    obj _ = Dict
+
+    id :: Obj morph a => morph a a
     -- | Associative composition of morphisms.
-    (.) :: b `q` c -> a `q` b -> a `q` c
+    (.) :: morph b c -> morph a b -> morph a c
 
-instance Semigroupoid (->) where
-    (.) f g x = f (g x)
+instance forall (m :: Multiplicity). Category (FUN m) where
+    id = \x -> x
+    f . g = \x -> f (g x)
 
-class Semigroupoid q => Category q where
-    id :: Obj q a => a `q` a
+type Yoneda :: (i -> i -> Type) -> i -> i -> Type
+newtype Yoneda morph a b = Op { getOp :: morph b a }
 
-instance Category (->) where
-    id x = x
-
-class Category q => Groupoid q where
-    inv :: a `q` b -> b `q` a
-
-newtype Yoneda (q :: i -> i -> Type) (a :: i) (b :: i) = Op { getOp :: b `q` a }
-
-instance Semigroupoid q => Semigroupoid (Yoneda q) where
-    type Obj (Yoneda q) = Obj q
-    observe (Op f) = case observe f of Dict -> Dict
+instance Category morph => Category (Yoneda morph) where
+    type Obj (Yoneda morph) = Obj morph
+    obj (Op f) = case obj f of Dict -> Dict
+    id = Op id
     Op f . Op g = Op (g . f)
 
-instance Category q => Category (Yoneda q) where
-    id = Op id
-
-type family Op (q :: i -> i -> Type) :: i -> i -> Type where
-    Op (Yoneda q) = q
-    Op q = Yoneda q
-
-type Post f = forall a. f a
-type Endo f a = f a a
-
-data (:~:) :: i -> i -> Type where
-    Refl :: a :~: a
-
-instance Semigroupoid (:~:) where
-    Refl . Refl = Refl
-
-instance Category (:~:) where
-    id = Refl
-
-instance Groupoid (:~:) where
-    inv Refl = Refl
+type Op :: (i -> i -> Type) -> i -> i -> Type
+type family Op morph where
+    Op (Yoneda morph) = morph
+    Op morph = Yoneda morph
