@@ -1,9 +1,8 @@
-module Data.Identity where
+module Data.Identity ((:~:) (Refl)) where
 
 import Category.Base
 import Category.Functor
 import Category.Groupoid
-import Data.Dict
 import Data.Kind (Type)
 
 type (:~:) :: i -> i -> Type
@@ -11,8 +10,10 @@ data (:~:) :: i -> i -> Type where
     Refl :: a :~: a
 
 instance Category (:~:) where
-    id = Refl
     Refl . Refl = Refl
+
+instance NiceCat (:~:) where
+    id = Refl
 
 instance Groupoid (:~:) where
     inv Refl = Refl
@@ -25,9 +26,7 @@ instance {-# INCOHERENT #-} Functor (->) (Yoneda (:~:)) f where
     map (Op Refl) = id
 
 instance {-# INCOHERENT #-} Functor (Nat (->) (:~:)) (:~:) f where
-    map_ _ _ = Dict
     map Refl = id
 
 instance {-# INCOHERENT #-} Functor (Nat (->) (:~:)) (Yoneda (:~:)) f where
-    map_ _ _ = Dict
     map (Op Refl) = id

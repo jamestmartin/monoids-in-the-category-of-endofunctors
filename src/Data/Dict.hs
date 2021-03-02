@@ -1,4 +1,4 @@
-module Data.Dict where
+module Data.Dict (Dict (Dict)) where
 
 import Data.Kind (Constraint, Type)
 

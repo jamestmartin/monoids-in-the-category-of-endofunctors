@@ -23,7 +23,11 @@
 --
 -- This technique was first described in [Conor McBride's Hasochism paper](https://personal.cis.strath.ac.uk/conor.mcbride/pub/hasochism.pdf);
 -- the idea to make a `Pi` typeclass was my own, but I'm sure it's been done before.
-module Quantifier where
+module Quantifier
+    ( Forall (Forall), runForall
+    , Pi, Ty, depi
+    , PiC, TyC, depic
+    ) where
 
 import Data.Kind (Constraint, Type)
 import Data.Maybe (Maybe (Nothing, Just))

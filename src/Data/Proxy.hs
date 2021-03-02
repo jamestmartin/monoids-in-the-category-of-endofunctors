@@ -3,7 +3,7 @@
 -- and doesn't let you control which arguments are implicit and which are explicit.
 --
 -- 'Proxy' provides a better alternative for passing explicit type arguments.
-module Data.Proxy where
+module Data.Proxy (Proxy (Proxy)) where
 
 import Data.Kind (Type)
 

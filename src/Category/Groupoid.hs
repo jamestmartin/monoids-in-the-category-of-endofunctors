@@ -1,4 +1,4 @@
-module Category.Groupoid where
+module Category.Groupoid (Groupoid, inv) where
 
 import Category.Base
 import Data.Kind (Constraint, Type)

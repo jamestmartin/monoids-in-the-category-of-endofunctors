@@ -1,5 +1,8 @@
 {-# LANGUAGE UndecidableSuperClasses #-}
-module Category.Constraint where
+module Category.Constraint
+    ( (:-) (Sub), (\\)
+    , ProdC
+    ) where
 
 import Category.Base
 import Category.Functor
@@ -14,12 +17,13 @@ data (:-) c d = Sub (c => Dict d)
 r \\ Sub Dict = r
 
 instance Category (:-) where
-    id = Sub Dict
     f . g = Sub (Dict \\ f \\ g)
 
+instance NiceCat (:-) where
+    id = Sub Dict
+
 instance Functor (Nat (->) (:-)) (Yoneda (:-)) (:-) where
-    map_ _ _ = Dict
-    map (Op (Sub f)) = Nat \(Sub g) -> Sub case f of Dict -> case g of Dict -> Dict
+    map (Op (Sub f)) = Nat \_ (Sub g) -> Sub case f of Dict -> case g of Dict -> Dict
 
 instance Functor (->) (:-) ((:-) a) where
     map = (.)
@@ -35,17 +39,16 @@ instance (c, d) => ProdC c d
 -- (up to isomorphism), although I haven't seriously thought about it at all.
 
 instance Functor (Nat (:-) (:-)) (:-) ProdC where
-    map_ _ _ = Dict
-    map (Sub f) = Nat (Sub case f of Dict -> Dict)
+    map (Sub f) = Nat_ (Sub case f of Dict -> Dict)
 
 instance Functor (:-) (:-) (ProdC a) where
     map (Sub f) = Sub case f of Dict -> Dict
 
-instance Monoidal (:-) ProdC where
+instance TensorProduct (:-) ProdC where
     type Unit (:-) ProdC = ()
-    uil = Sub Dict
-    uir = Sub Dict
-    uel = Sub Dict
-    uer = Sub Dict
-    pal = Sub Dict
-    par = Sub Dict
+    prodIL _ = Sub Dict
+    prodIR _ = Sub Dict
+    prodEL _ = Sub Dict
+    prodER _ = Sub Dict
+    prodAL _ _ _ = Sub Dict
+    prodAR _ _ _ = Sub Dict

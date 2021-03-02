@@ -1,58 +1,68 @@
-module Category.Monoidal where
+module Category.Monoidal
+    ( TensorProduct, Unit, unitObj, prodObj, prodIL, prodIR, prodEL, prodER, prodAL, prodAR
+    , Compose (Compose), getCompose
+    , Identity (Identity), getIdentity
+    ) where
 
 import Category.Base
 import Category.Functor
-import Data.Dict
 import Data.Either (Either (Left, Right))
 import Data.Kind (Constraint, FUN, Type)
 import Data.Void (Void)
 
--- FIXME: Rename this.
 -- | A category is monoidal if it has a product and a unit for that product.
 -- A category can have multiple tensor products and be monoidal in multiple ways,
 -- including the category of types itself,
 -- so instead of using a @Monoidal@ typeclass, we use a @TensorProduct@ typeclass.
--- Only we actually don't, because I haven't had a chance to rename it yet.
-type Monoidal :: (i -> i -> Type) -> (i -> i -> i) -> Constraint
-class Endo Bifunctor morph prod => Monoidal (morph :: i -> i -> Type) prod where
-    -- FIXME: Fix all of these garbage names. `uil`? `pal`? seriously?
+type TensorProduct :: (i -> i -> Type) -> (i -> i -> i) -> Constraint
+class Endo Bifunctor morph prod => TensorProduct (morph :: i -> i -> Type) prod where
     type Unit morph prod :: i
-    prodObj :: (Obj morph a, Obj morph b) => proxy morph -> proxy' prod -> proxy'' a -> proxy''' b -> Dict (Obj morph (prod a b))
-    default prodObj :: Obj morph ~ Unconst1 => proxy morph -> proxy' prod -> proxy'' a -> proxy''' b -> Dict (Obj morph (prod a b))
-    prodObj _ _ _ _ = Dict
-    unitObj :: proxy morph -> proxy' prod -> Dict (Obj morph (Unit morph prod))
-    default unitObj :: Obj morph ~ Unconst1 => proxy morph -> proxy' prod -> Dict (Obj morph (Unit morph prod))
-    unitObj _ _ = Dict
-    uil :: Obj morph a => morph a (prod (Unit morph prod) a)
-    uir :: Obj morph a => morph a (prod a (Unit morph prod))
-    uel :: Obj morph a => morph (prod (Unit morph prod) a) a
-    uer :: Obj morph a => morph (prod a (Unit morph prod)) a
-    pal :: (Obj morph a, Obj morph b, Obj morph c) => morph (prod a (prod b c)) (prod (prod a b) c)
-    par :: (Obj morph a, Obj morph b, Obj morph c) => morph (prod (prod a b) c) (prod a (prod b c))
+    -- | The unit is an object.
+    unitObj :: proxy prod -> Obj morph (Unit morph prod)
+    default unitObj :: NiceCat morph => proxy prod -> Obj morph (Unit morph prod)
+    unitObj _ = id
 
-instance Monoidal (FUN m) (,) where
+    -- | Given two objects, their product is also an object.
+    prodObj :: Obj morph a -> Obj morph b -> Obj morph (prod a b)
+    default prodObj :: NiceCat morph => Obj morph a -> Obj morph b -> Obj morph (prod a b)
+    prodObj _ _ = id
+
+    -- | Introduce a product with the value injected into the left side.
+    prodIL :: Obj morph a -> morph a (prod a (Unit morph prod))
+    -- | Introduce a product with the value injected into the right side.
+    prodIR :: Obj morph a -> morph a (prod (Unit morph prod) a)
+    -- | Eliminate a product with the value projected from the left side.
+    prodEL :: Obj morph a -> morph (prod a (Unit morph prod)) a
+    -- | Eliminate a product with the value projected from the right side.
+    prodER :: Obj morph a -> morph (prod (Unit morph prod) a) a
+    -- | Reassociate a product, nesting it to the left.
+    prodAL :: Obj morph a -> Obj morph b -> Obj morph c -> morph (prod a (prod b c)) (prod (prod a b) c)
+    -- | Reassociate a product, nesting it to the right.
+    prodAR :: Obj morph a -> Obj morph b -> Obj morph c -> morph (prod (prod a b) c) (prod a (prod b c))
+
+instance TensorProduct (FUN m) (,) where
     type Unit (FUN m) (,) = ()
-    uil = \x -> ((), x)
-    uir = \x -> (x, ())
-    uel = \((), x) -> x
-    uer = \(x, ()) -> x
-    pal = \(x, (y, z)) -> ((x, y), z)
-    par = \((x, y), z) -> (x, (y, z))
+    prodIL _ = \x -> (x, ())
+    prodIR _ = \x -> ((), x)
+    prodEL _ = \(x, ()) -> x
+    prodER _ = \((), x) -> x
+    prodAL _ _ _ = \(x, (y, z)) -> ((x, y), z)
+    prodAR _ _ _ = \((x, y), z) -> (x, (y, z))
 
-instance Monoidal (FUN m) Either where
+instance TensorProduct (FUN m) Either where
     type Unit (FUN m) Either = Void
-    uil = Right
-    uir = Left
-    uel (Left x) = (\case{}) x
-    uel (Right x) = x
-    uer (Left x) = x
-    uer (Right x) = (\case{}) x
-    pal (Left x) = Left (Left x)
-    pal (Right (Left x)) = Left (Right x)
-    pal (Right (Right x)) = Right x
-    par (Left (Left x)) = Left x
-    par (Left (Right x)) = Right (Left x)
-    par (Right x) = Right (Right x)
+    prodIL _ = Left
+    prodIR _ = Right
+    prodEL _ (Left x) = x
+    prodEL _ (Right x) = (\case{}) x
+    prodER _ (Left x) = (\case{}) x
+    prodER _ (Right x) = x
+    prodAL _ _ _ (Left x) = Left (Left x)
+    prodAL _ _ _ (Right (Left x)) = Left (Right x)
+    prodAL _ _ _ (Right (Right x)) = Right x
+    prodAR _ _ _ (Left (Left x)) = Left x
+    prodAR _ _ _ (Left (Right x)) = Right (Left x)
+    prodAR _ _ _ (Right x) = Right (Right x)
 
 data Compose f g x = (Functor (->) (->) f, Functor (->) (->) g) => Compose { getCompose :: !(f (g x)) }
 newtype Identity x = Identity { getIdentity :: x }
@@ -60,24 +70,22 @@ newtype Identity x = Identity { getIdentity :: x }
 instance Functor (FUN m) (FUN m) Identity where
     map f = \(Identity x) -> Identity (f x)
 
-instance Functor (->) (->) (Compose f g) where
-    map f = \(Compose x) -> Compose (map @_ @_ @(->) @(->) (map f) x)
-
 instance Functor (Nat (Nat (->) (->)) (Nat (->) (->))) (Nat (->) (->)) Compose where
-    map_ _ _ = Dict
-    map (Nat f) = Nat (Nat \(Compose x) -> Compose (f x))
+    map (Nat f) = Nat \(Nat _) -> Nat \_ (Compose x) -> Compose (f id x)
 
 instance Functor (Nat (->) (->)) (Nat (->) (->)) (Compose f) where
-    map_ _ _ = Dict
-    map (Nat f) = Nat \(Compose x) -> Compose (map f x)
+    map (Nat f) = Nat \_ (Compose x) -> Compose (map (f id) x)
 
-instance Monoidal (Nat (->) (->)) Compose where
+instance Functor (->) (->) (Compose (f :: Type -> Type) g) where
+    map f = \(Compose x) -> Compose (map @_ @_ @_ @(->) (map f) x)
+
+instance TensorProduct (Nat (->) (->)) Compose where
     type Unit (Nat (->) (->)) Compose = Identity
-    prodObj _ _ _ _ = Dict
-    unitObj _ _ = Dict
-    uil = Nat \x -> Compose (Identity x)
-    uir = Nat \x -> Compose (map Identity x)
-    uel = Nat \(Compose (Identity x)) -> x
-    uer = Nat \(Compose x) -> map getIdentity x
-    pal = Nat \(Compose x) -> Compose (Compose (map getCompose x))
-    par = Nat \(Compose (Compose x)) -> Compose (map Compose x)
+    unitObj _ = natId
+    prodObj _ _ = natId
+    prodIL (Nat _) = Nat_ \x -> Compose (map Identity x)
+    prodIR (Nat _) = Nat_ \x -> Compose (Identity x)
+    prodEL (Nat _) = Nat_ \(Compose x) -> map getIdentity x
+    prodER (Nat _) = Nat_ \(Compose (Identity x)) -> x
+    prodAL (Nat _) (Nat _) (Nat _) = Nat_ \(Compose x) -> Compose (Compose (map getCompose x))
+    prodAR (Nat _) (Nat _) (Nat _) = Nat_ \(Compose (Compose x)) -> Compose (map Compose x)

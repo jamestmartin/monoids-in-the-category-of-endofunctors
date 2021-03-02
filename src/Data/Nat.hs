@@ -1,5 +1,10 @@
 -- | The natural numbers and associated types and functions.
-module Data.Nat where
+module Data.Nat
+    ( N (Z, S), inf
+    , NTyF (ZTyF, STyF)
+    , (:+)
+    , injective, rightZero
+    ) where
 
 import Category.Functor
 import Category.Functor.Foldable
@@ -42,8 +47,7 @@ data NTyF r n where
     STyF :: r n -> NTyF r ('S n)
 
 instance Functor (Nat (->) (:~:)) (Nat (->) (:~:)) NTyF where
-    map_ _ _ = Dict
-    map (Nat f) = Nat \case
+    map (Nat_ f) = Nat_ \case
         ZTyF -> ZTyF
         (STyF r) -> STyF (f r)
 
@@ -60,12 +64,12 @@ instance Corecursive (->) N where
 type instance Base (Ty N) = NTyF
 
 instance Recursive (Nat (->) (:~:)) (Ty N) where
-    project = Nat \case
+    project = Nat_ \case
         ZTy -> ZTyF
         (STy r) -> STyF r
 
 instance Corecursive (Nat (->) (:~:)) (Ty N) where
-    embed = Nat \case
+    embed = Nat_ \case
         ZTyF -> ZTy
         (STyF r) -> STy r
 
