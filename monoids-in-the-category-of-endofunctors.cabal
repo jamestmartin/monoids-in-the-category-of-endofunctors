@@ -28,6 +28,7 @@ library
       Category.Groupoid
       Category.Monoid
       Category.Monoidal
+      Category.Product
       Category.Semigroup
       Data.Dict
       Data.Fin
@@ -88,6 +89,7 @@ library
       TupleSections
       TypeApplications
       TypeFamilyDependencies
+      TypeInType
       TypeOperators
       TypeSynonymInstances
       ViewPatterns

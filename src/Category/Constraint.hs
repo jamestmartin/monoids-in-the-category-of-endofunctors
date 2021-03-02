@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
 module Category.Constraint
     ( (:-) (Sub), (\\)
@@ -7,6 +8,7 @@ module Category.Constraint
 import Category.Base
 import Category.Functor
 import Category.Monoidal
+import Category.Product
 import Data.Dict
 import Data.Kind (Constraint, Type)
 
@@ -23,13 +25,22 @@ instance NiceCat (:-) where
     id = Sub Dict
 
 instance Functor (Nat (->) (:-)) (Yoneda (:-)) (:-) where
-    map (Op (Sub f)) = Nat \_ (Sub g) -> Sub case f of Dict -> case g of Dict -> Dict
+    map (Op (Sub f)) = Nat_ \(Sub g) -> Sub case f of Dict -> case g of Dict -> Dict
 
 instance Functor (->) (:-) ((:-) a) where
     map = (.)
 
 instance Functor (->) (:-) Dict where
     map f = \Dict -> case f of Sub Dict -> Dict
+
+type UncurryC :: (a -> b -> Constraint) -> (a, b) -> Constraint
+class f (Pi1 ab) (Pi2 ab) => UncurryC f ab
+instance f (Pi1 ab) (Pi2 ab) => UncurryC f ab
+type instance Uncurry = UncurryC
+
+instance Unc (:-) where
+    uncurry _ = Sub Dict
+    ununcurry _ = Sub Dict
 
 class (c, d) => ProdC c d
 instance (c, d) => ProdC c d

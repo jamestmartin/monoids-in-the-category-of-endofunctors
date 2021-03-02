@@ -3,8 +3,6 @@ module Category.Functor
     ( Functor, map
     , Endo, Endofunctor, endomap
     , Contravariant, contramap
-    , Bifunctor, bimap, first, second
-    , Profunctor, dimap, lmap, rmap
     , Nat (Nat), runNat, pattern Nat_, natId
     , Const (Const), getConst
     ) where
@@ -35,28 +33,6 @@ instance {-# INCOHERENT #-} Functor dest (Yoneda src) f => Contravariant dest sr
 instance {-# INCOHERENT #-} Functor dest src f => Contravariant dest (Yoneda src) f where
     contramap (Op f) = map f
 
-type Bifunctor :: (j -> j -> Type) -> (i -> i -> Type) -> (i -> i -> j) -> Constraint
-class (Functor (Nat dest src) src f, forall x. Functor dest src (f x)) => Bifunctor dest src f
-instance (Functor (Nat dest src) src f, forall x. Functor dest src (f x)) => Bifunctor dest src f
-bimap :: Bifunctor dest src f => src a c -> src b d -> dest (f a b) (f c d)
-bimap f g = runNat (map f) (idR g) . map g
--- FIXME: A NiceCat dependency should not be necessary here,
---   this most likely means that my definition of Bifunctor is inadequate.
-first :: forall dest src f a b c. (Bifunctor dest src f, NiceCat src) => src a b -> dest (f a c) (f b c)
-first f = runNat (map f) (id :: Obj src c)
-second :: Bifunctor dest src f => src b c -> dest (f a b) (f a c)
-second g = map g
-
-type Profunctor :: (j -> j -> Type) -> (i -> i -> Type) -> (i -> i -> j) -> Constraint
-class (Functor (Nat dest src) (Yoneda src) f, forall x. Functor dest src (f x)) => Profunctor dest src f
-instance (Functor (Nat dest src) (Yoneda src) f, forall x. Functor dest src (f x)) => Profunctor dest src f
-dimap :: Profunctor dest src f => src a b -> src c d -> dest (f b c) (f a d)
-dimap f g = runNat (map (Op f)) (idR g) . map g
-lmap :: forall dest src f a b c. (Profunctor dest src f, NiceCat src) => src a b -> dest (f b c) (f a c)
-lmap f = runNat (map (Op f)) (id :: Obj src c)
-rmap :: Profunctor dest src f => src b c -> dest (f a b) (f a c)
-rmap f = map f
-
 type Nat :: (j -> j -> Type) -> (i -> i -> Type) -> (i -> j) -> (i -> j) -> Type
 data Nat dest src f g = (Functor dest src f, Functor dest src g) => Nat { runNat :: !(forall a. Obj src a -> dest (f a) (g a)) }
 
@@ -86,16 +62,16 @@ instance Functor (->) (FUN m) (FUN m a) where
     map f = \g -> f . g
 
 instance Functor (Nat (->) (FUN m)) (Yoneda (FUN m)) (FUN m) where
-    map (Op f) = Nat \_ g -> g . f
+    map (Op f) = Nat_ \g -> g . f
 
 instance Functor (Nat (FUN m) (FUN m)) (FUN m) (,) where
-    map f = Nat \_ (x, y) -> (f x, y)
+    map f = Nat_ \(x, y) -> (f x, y)
 
 instance Functor (FUN m) (FUN m) ((,) a) where
     map f = \(x, y) -> (x, f y)
 
 instance Functor (Nat (FUN m) (FUN m)) (FUN m) Either where
-    map f = Nat \_ -> \case
+    map f = Nat_ \case
         Left y -> Left (f y)
         Right x -> Right x
 
@@ -116,7 +92,7 @@ type Const :: Type -> i -> Type
 newtype Const a b = Const { getConst :: a }
 
 instance Functor (Nat (->) (->)) (->) Const where
-    map f = Nat \_ (Const x) -> Const (f x)
+    map f = Nat_ \(Const x) -> Const (f x)
 
 instance {-# INCOHERENT #-} Category src => Functor (->) src (Const a) where
     map _ = \(Const x) -> Const x

@@ -10,7 +10,7 @@ class TensorProduct morph prod => Semigroup morph prod s where
     append :: morph (prod s s) s
 
 instance Semigroup (Nat (->) (->)) Compose Maybe where
-    append = Nat \_ (Compose x') -> case x' of
+    append = Nat_ \(Compose x') -> case x' of
         Nothing -> Nothing
         Just Nothing -> Nothing
         Just (Just x) -> Just x
